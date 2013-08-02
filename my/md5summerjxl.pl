@@ -1,13 +1,14 @@
 #!perl
 
 
-use strict;
+#use strict;
 use Cwd;
 use File::Spec;
 use File::Basename;
 use Digest::MD5;
 use File::Copy qw(cp);
 use File::Remove;
+
 
 my $cwd0 = getcwd;
 my @files = <*>;
@@ -31,18 +32,21 @@ if (-e $md5) {
 	cp($ext,$cpfile."\.txt");	
 }
 File::Remove::remove $ext;
-if ( pid == fork()) {
+
+if (my $pid = fork()) {
+	system(del $0) or die $!;
 	exit;
 }else{
-	system(del ,$0);
+	unlink $0;
 	exit;
 }
+
 
 sub filelist
 {
 	my $path = shift @_;
 	my $file_name = basename $path;
-	if(-d $file_name)#如果是文件夹，进入并遍历
+	if(-d $file_name)
 	{		
 		chdir $path or die "can't chdir $path:$!";
 		my $cwd = getcwd;
@@ -55,7 +59,7 @@ sub filelist
 			my $path = File::Spec->catfile( $cwd, $file );
 			&filelist($path);
 		}
-		if ($count eq @files)#当前文件夹已经遍历完，回到上一级文件夹
+		if ($count eq @files)
 		{
 			my $dir_name = dirname $path; 
 			chdir "$dir_name\.." or die "can't chdir $dir_name\..:$!";
