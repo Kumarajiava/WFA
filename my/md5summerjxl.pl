@@ -11,19 +11,47 @@ use File::Remove;
 use IO::File;
 use Win32::Clipboard;
 
+
+select( STDOUT ); 
+$| = 1;
+my $cwd0;
 print "请输入要计算MD5的目录:\n";
-my $cwd0=<STDIN>;
+my $mlgm=5;
+while ($mlgm != -1) {
+$cwd0=<STDIN>;
+while ($cwd0=~m/\\\\|\/\/|\#|\!|\=|\,|\@|\$|\%|\&|\*|\。|\`/g){
+	print "请输入正确的目录\n" ;
+	$cwd0=<STDIN>;
+	$mlgm--;
+	if ($mlgm == 0){
+		print "喵了个咪！能不能输入正确的目录\n";
+		exit 0;
+	}
+	next;
+}
 $cwd0=~s#\/#\\#g;
-#my $cwd0 = getcwd;
 chomp ($cwd0);
-chdir ($cwd0);
+if (chdir ($cwd0)){
+	$mlgm = -1;
+	}
+else{	
+	$mlgm--;
+	if ($mlgm == 0){
+		print "咪了个喵！都说了";
+		exit 0;
+	}
+	print "输入的目录不存在\n";
+	} 
+next;
+}
+
 my @files = glob q{*};
 my $ext = "MD5";
 my $myself ="md5summerjxl\.exe";
 my $md5=$cwd0."\\".$ext;
 my $FFILE = IO::File->new($ext,q{>} ) or die "Couldn't open $ext:$!";
 select( $FFILE ); 
-$| = 1;
+$| = 1; 
 foreach my $file(@files)
 {
 	my $path = File::Spec->catfile( $cwd0, $file );
@@ -82,12 +110,12 @@ sub filelist
         my $hash=Digest::MD5->new->addfile(*$FH)->hexdigest;        
         $FH->close;
         my $cwd1=$cwd0;
-        $cwd1=~s/\//\#/g;
-        $path=~s/\\/\#/g;
-        $path=~s#$cwd1#\.#g;
+        $cwd1=~s/\/|\\/\#/g;
+        $path=~s/\\|\//\#/g;
+        $path=~s#$cwd1#\.#gi;
         $path=~s/\#/\\/g;        
         next if $path eq "\.\\$myself";
-		print $FFILE "<======$hash======>";
-        print $FFILE "$path\n";
+		print $FFILE "<======$hash======> $path\n";
+        print STDOUT "<======$hash======> $path\n";
 	}
 }
