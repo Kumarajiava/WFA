@@ -9,8 +9,9 @@ use Digest::MD5;
 use File::Copy qw(cp);
 use File::Remove;
 use IO::File;
+use Win32::Clipboard;
 
-print "input the path:\n";
+print "请输入要计算MD5的目录:\n";
 my $cwd0=<STDIN>;
 $cwd0=~s#\/#\\#g;
 #my $cwd0 = getcwd;
@@ -38,8 +39,11 @@ if (-e $md5) {
 	cp($ext,$cpfile."\.txt");	
 }
 File::Remove::remove $ext;
+print STDOUT "生成的MD5文件的MD5值为:\n\t$cpfile\n该值已copy到剪贴板\n";
+my $CLIP = Win32::Clipboard();
+$CLIP->Set($cpfile);
 print STDOUT "end!\n";
-print STDOUT "$cpfile\n";
+<>;
 # if (my $pid = fork()) {
 	# system(del $0) or die $!;
 	# exit;
