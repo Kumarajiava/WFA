@@ -10,8 +10,12 @@ use File::Copy qw(cp);
 use File::Remove;
 use IO::File;
 
-
-my $cwd0 = getcwd;
+print "input the path:\n";
+my $cwd0=<STDIN>;
+$cwd0=~s#\/#\\#g;
+#my $cwd0 = getcwd;
+chomp ($cwd0);
+chdir ($cwd0);
 my @files = glob q{*};
 my $ext = "MD5";
 my $myself ="md5summerjxl\.exe";
@@ -25,16 +29,17 @@ foreach my $file(@files)
 	&filelist($path);
 }
 $FFILE->close;
-
+my $cpfile;
 if (-e $md5) {
 	my $FHH=IO::File->new($md5) or die "Couldn't open '$md5': $!";
     binmode($FHH);
-    my $cpfile = Digest::MD5->new->addfile(*$FHH)->hexdigest;        
+    $cpfile = Digest::MD5->new->addfile(*$FHH)->hexdigest;        
 	$FHH->close;
 	cp($ext,$cpfile."\.txt");	
 }
 File::Remove::remove $ext;
-
+print STDOUT "end!\n";
+print STDOUT "$cpfile\n";
 # if (my $pid = fork()) {
 	# system(del $0) or die $!;
 	# exit;
