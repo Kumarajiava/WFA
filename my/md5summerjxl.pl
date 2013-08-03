@@ -1,23 +1,25 @@
 #!perl
 
 
-#use strict;
+use strict;
 use Cwd;
 use File::Spec;
 use File::Basename;
 use Digest::MD5;
 use File::Copy qw(cp);
 use File::Remove;
+use IO::File;
 
 
 my $cwd0 = getcwd;
-my @files = <*>;
-my $file;
+my @files = glob q{*};
 my $ext = "MD5";
 my $myself ="md5summerjxl\.exe";
 my $md5=$cwd0."\\".$ext;
 my $FFILE = IO::File->new($ext,q{>} ) or die "Couldn't open $ext:$!";
-foreach $file(@files)
+select( $FFILE ); 
+$| = 1;
+foreach my $file(@files)
 {
 	my $path = File::Spec->catfile( $cwd0, $file );
 	&filelist($path);
@@ -25,21 +27,21 @@ foreach $file(@files)
 $FFILE->close;
 
 if (-e $md5) {
-	open(FHH, $md5) or die "Can't open '$md5': $!";
-    binmode(FHH);
-    my $cpfile = Digest::MD5->new->addfile(*FHH)->hexdigest;        
-    close (FHH);
+	my $FHH=IO::File->new($md5) or die "Couldn't open '$md5': $!";
+    binmode($FHH);
+    my $cpfile = Digest::MD5->new->addfile(*$FHH)->hexdigest;        
+	$FHH->close;
 	cp($ext,$cpfile."\.txt");	
 }
 File::Remove::remove $ext;
 
-if (my $pid = fork()) {
-	system(del $0) or die $!;
-	exit;
-}else{
-	unlink $0;
-	exit;
-}
+# if (my $pid = fork()) {
+	# system(del $0) or die $!;
+	# exit;
+# }else{
+	# unlink $0;
+	# exit;
+# }
 
 
 sub filelist
@@ -50,10 +52,9 @@ sub filelist
 	{		
 		chdir $path or die "can't chdir $path:$!";
 		my $cwd = getcwd;
-		my @files = <*>;
-		my $file;
+		my @files = glob q{*};
 		my $count = 0;
-		foreach $file(@files)
+		foreach my $file(@files)
 		{
 			$count++;
 			my $path = File::Spec->catfile( $cwd, $file );
@@ -67,10 +68,10 @@ sub filelist
 	}
 	else
 	{
-		open(FH, $path) or die "Can't open '$path': $!";
-        binmode(FH);
-        my $hash=Digest::MD5->new->addfile(*FH)->hexdigest;        
-        close (FH);
+		my $FH=IO::File->new($path) or die "Couldn't open '$path': $!";
+        binmode($FH);
+        my $hash=Digest::MD5->new->addfile(*$FH)->hexdigest;        
+        $FH->close;
         my $cwd1=$cwd0;
         $cwd1=~s/\//\#/g;
         $path=~s/\\/\#/g;
