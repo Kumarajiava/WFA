@@ -6,8 +6,8 @@ use Cwd;
 use File::Spec;
 use File::Basename;
 use Digest::MD5;
-use File::Copy qw(cp);
-use File::Remove;
+#use File::Copy qw(cp);
+#use File::Remove;
 use IO::File;
 use Win32::Clipboard;
 
