@@ -66,26 +66,16 @@ if (-e $md5) {
 	my $FHH=IO::File->new($md5) or die "Couldn't open '$md5': $!";
     binmode($FHH);
     $cpfile = Digest::MD5->new->addfile(*$FHH)->hexdigest;        
-	$FHH->close;
-	#cp($ext,$cpfile."\.txt");	
+	$FHH->close;	
 }
-#File::Remove::remove $ext;
 print STDOUT "生成的MD5文件的MD5值为:\n\t$cpfile\n该值已copy到剪贴板\n";
 my $CLIP = Win32::Clipboard();
 $CLIP->Set($cpfile);
 print STDOUT "end!\n";
 <>;
-# if (my $pid = fork()) {
-	# system(del $0) or die $!;
-	# exit;
-# }else{
-	# unlink $0;
-	# exit;
-# }
 
 
-sub filelist
-{
+sub filelist{
 	my $path = shift @_;
 	my $file_name = basename $path;
 	if(-d $file_name)
