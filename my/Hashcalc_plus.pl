@@ -3,7 +3,7 @@
 use strict;
 use Tk;
 #use Tk::DirTree;
-#use Tk::PathEntry;
+use Tk::PathEntry;
 use Cwd;
 use File::Spec;
 use File::Basename;
@@ -12,8 +12,8 @@ use Digest::SHA;
 use IO::File;
 use IO::Handle;
 use Win32::Clipboard;
-#use Encode;
-#use encoding 'gbk';
+use Encode;
+use encoding 'gbk';
 
 my @ph;
 my $cwd0;
@@ -21,15 +21,18 @@ my $FFILE;
 my $ext = 'MD5.txt';
 my $kingst = 'MD5.txt\'s MD5';
 my $main = MainWindow->new;
-#my $filedir ;
-#$filedir = $main->PathEntry(-width => 103,
-#                    -initialdir =>'pls input the dir',
-#                    -textvariable =>\$filedir,
-#                    -autocomplete => 1,
-#                    -pathcompletion => '<F5>',
-#                    -dircolor => 'red',
-#        )->pack;
-my $filedir = $main->Entry(-width => 103)->pack;
+#=pod
+my $filedir;
+$filedir = $main->PathEntry(-width => 103,
+                    -initialdir =>'pls input the dir',
+                    -textvariable =>\$filedir,
+                    -autocomplete => 1,
+                    -pathcompletion => '<Tab>',
+                    -dircolor => 'red',
+					-selectcmd =>sub{Encode::_utf8_off($filedir)},
+        )->pack;
+#=cut
+#my $filedir = $main->Entry(-width => 103)->pack;
 my $butt_frame = $main->Frame()->pack();
 $butt_frame->Button(-text => 'HASHCALC_MD5',
     -command => sub{do_fax(1, $filedir)},
@@ -41,9 +44,10 @@ my $fire_frame = 0;
 MainLoop;
 
 sub do_fax {
-    my ($hashgsett, $filedirr) = @_;
+    my ($hashgsett, $filedir) = @_;
     my $hashgset = $hashgsett;
-    my $filedir_val = $filedirr->get;
+    #my $filedir_val = $filedirr->get;
+    my $filedir_val = $filedir;
     if ($fire_frame) {
         $fire_frame->packForget;
     }
@@ -54,6 +58,7 @@ sub do_fax {
         do_pri(@ph);
         undef @ph;
     }else{
+		
         my $FH=IO::File->new($filedir_val);
         binmode $FH,':raw';
         my $hash;
@@ -89,7 +94,7 @@ sub do_pri{
 sub do_check{
     ($cwd0)=@_;
     $cwd0=~s{\/}{\\}g;
-    chomp $cwd0;
+    #chomp $cwd0;
     $fire_frame->packForget unless (chdir ($cwd0));
     return 1;
 }
@@ -98,7 +103,7 @@ sub hashcalc{
     my @files = glob q{*};
     $ext ='SHA256.txt' if $hashgset == 2;
     $ext ='MD5.txt' if $hashgset == 1;
-    my $md5=$cwd0.'\\'.$ext;
+    my $md5=File::Spec->catfile($cwd0, $ext);
     $FFILE = IO::File->new($ext,q{>} );
     $FFILE->autoflush();
     my $gctime = localtime;
@@ -112,7 +117,9 @@ sub hashcalc{
     $fire_frame->Label(-text => $timm)->pack;
     foreach my $file(@files)
     {
-        my $path = File::Spec->catfile( $cwd0, $file );
+		Encode::_utf8_off($cwd0);
+		Encode::_utf8_off($file);
+        my $path = File::Spec->catfile($cwd0,$file);
         filelist($path,$hashgset);
     }
     $FFILE->close;
@@ -148,6 +155,8 @@ sub filelist{
         foreach my $file(@files)
         {
             $count++;
+			Encode::_utf8_off($cwd);
+			Encode::_utf8_off($file);
             my $path = File::Spec->catfile( $cwd, $file );
             &filelist($path,$hashgset);
         }
