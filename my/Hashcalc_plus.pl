@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w 
 
 use strict;
-use warnings;
 use Tk;
 #use Tk::DirTree;
 #use Tk::PathEntry;
@@ -56,7 +55,7 @@ sub do_fax {
         undef @ph;
     }else{
         my $FH=IO::File->new($filedir_val);
-        binmode($FH);
+        binmode $FH,':raw';
         my $hash;
         if ($hashgset == 1) {
             $hash=Digest::MD5->new->addfile(*$FH)->hexdigest;
@@ -90,7 +89,7 @@ sub do_pri{
 sub do_check{
     ($cwd0)=@_;
     $cwd0=~s{\/}{\\}g;
-    chomp ($cwd0);
+    chomp $cwd0;
     $fire_frame->packForget unless (chdir ($cwd0));
     return 1;
 }
@@ -99,7 +98,7 @@ sub hashcalc{
     my @files = glob q{*};
     $ext ='SHA256.txt' if $hashgset == 2;
     $ext ='MD5.txt' if $hashgset == 1;
-    my $md5=$cwd0.\\.$ext;
+    my $md5=$cwd0.'\\'.$ext;
     $FFILE = IO::File->new($ext,q{>} );
     $FFILE->autoflush();
     my $gctime = localtime;
@@ -121,7 +120,7 @@ sub hashcalc{
 
     if (-e $md5) {
         my $FHH=IO::File->new($md5);
-        binmode($FHH);
+        binmode $FHH,':raw';
         if ($hashgset == 1) {
             $cpfile = Digest::MD5->new->addfile(*$FHH)->hexdigest;
         }else{
@@ -160,8 +159,8 @@ sub filelist{
     }
     else
     {
-        my $FH=IO::File->new($path) or die "Couldn't open '$path': $!";
-        binmode($FH);
+        my $FH=IO::File->new($path);
+        binmode $FH,':raw';
         my $hash;
         if ($hashgset == 1) {
             $hash=Digest::MD5->new->addfile(*$FH)->hexdigest;
