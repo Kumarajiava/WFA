@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w 
+#!perl
 
 use strict;
 use Tk;
@@ -13,7 +13,7 @@ use IO::File;
 use IO::Handle;
 use Win32::Clipboard;
 use Encode;
-use encoding 'gbk';
+use encoding 'GBK';
 
 my @ph;
 my $cwd0;
@@ -50,24 +50,26 @@ sub do_fax {
 
     my $filedir_val = $filedirr->get;
 	
-    #my $filedir_val = $filedir;
+
     if ($fire_frame) {
         $fire_frame->packForget;
     }
     $fire_frame = $main->Frame()->pack(-side => 'bottom');
-    if (-d $filedir_val){
+	Encode::_utf8_off($filedir_val);
+	if (-d $filedir_val){
         do_check($filedir_val);
         hashcalc($hashgset);
         do_pri(@ph);
         undef @ph;
     }else{
-		if (1) {
+		if (0) {
 			my $f = $0.'temp';
 			my $FFS = IO::File->new($f,q{>} );
 			$FFS->autoflush();
 			print $FFS encode('gbk',$filedir_val);	
 			$FFS->close;
-			$FFS = IO::File->new($f);
+			#$FFS = IO::File->new($f);
+			open($FFS, '<:encoding(GBK)', $f);
 			my @sdf = <$FFS>;
 			$filedir_val = shift @sdf;
 			undef $FFS;
